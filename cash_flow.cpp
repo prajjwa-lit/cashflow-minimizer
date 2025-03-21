@@ -55,19 +55,22 @@ void settleTransactions(vector<int> &netAmount)
 }
 
 // Main function to minimize cash flow
-void minimizeCashFlow(vector<vector<int>> &graph, int numPersons)
+extern "C"
 {
-    vector<int> netAmount(numPersons, 0);
-
-    // Calculate the net amount each person needs to pay
-    for (int p = 0; p < numPersons; p++)
+    void minimizeCashFlow(vector<vector<int>> &graph, int numPersons)
     {
-        for (int q = 0; q < numPersons; q++)
-        {
-            netAmount[p] += (graph[q][p] - graph[p][q]);
-        }
-    }
+        vector<int> netAmount(numPersons, 0);
 
-    // Settle the transactions
-    settleTransactions(netAmount);
+        // Calculate the net amount each person needs to pay
+        for (int p = 0; p < numPersons; p++)
+        {
+            for (int q = 0; q < numPersons; q++)
+            {
+                netAmount[p] += (graph[q][p] - graph[p][q]);
+            }
+        }
+
+        // Settle the transactions
+        settleTransactions(netAmount);
+    }
 }
