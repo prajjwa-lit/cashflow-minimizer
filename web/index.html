@@ -7,14 +7,118 @@
     <title>Cash Flow Minimizer</title>
     <script src="cashflow.js"></script>
     <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: auto;
+            text-align: center;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+
+        button {
+            margin: 10px;
+            padding: 8px 15px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
 </head>
 
 <body>
     <h1>Cash Flow Minimizer</h1>
-    <textarea id="input" placeholder="Enter transactions as JSON"></textarea>
+
+    <button onclick="addPerson()">Add Person</button>
+    <div id="people-list"></div>
+
+    <h2>Enter Transactions</h2>
+    <table id="transaction-table">
+        <tr>
+            <th>From</th>
+            <th>To</th>
+            <th>Amount</th>
+            <th>Action</th>
+        </tr>
+    </table>
+    <button onclick="addTransactionRow()">Add Transaction</button>
+    <br><br>
     <button onclick="runMinimizer()">Calculate</button>
-    <pre id="output"></pre>
-    <script src="app.js"></script>
+
+    <script>
+        let people = [];
+
+        function addPerson() {
+            const name = prompt("Enter person name:");
+            if (name && !people.includes(name)) {
+                people.push(name);
+                updatePeopleList();
+            }
+        }
+
+        function updatePeopleList() {
+            const listDiv = document.getElementById("people-list");
+            listDiv.innerHTML = "<h3>People</h3>" + people.join(", ");
+        }
+
+        function addTransactionRow() {
+            if (people.length < 2) {
+                alert("Please add at least two people first.");
+                return;
+            }
+
+            const table = document.getElementById("transaction-table");
+            let row = table.insertRow();
+            let cell1 = row.insertCell(0);
+            let cell2 = row.insertCell(1);
+            let cell3 = row.insertCell(2);
+            let cell4 = row.insertCell(3);
+
+            cell1.innerHTML = `<select>${people.map(p => `<option>${p}</option>`).join('')}</select>`;
+            cell2.innerHTML = `<select>${people.map(p => `<option>${p}</option>`).join('')}</select>`;
+            cell3.innerHTML = '<input type="number" min="1">';
+            cell4.innerHTML = '<button onclick="removeTransactionRow(this)" style="background-color: red;">Delete</button>';
+        }
+
+        function removeTransactionRow(button) {
+            let row = button.parentNode.parentNode;
+            row.parentNode.removeChild(row);
+        }
+
+        function runMinimizer() {
+            let transactions = [];
+            let rows = document.querySelectorAll("#transaction-table tr:not(:first-child)");
+            rows.forEach(row => {
+                let from = row.cells[0].querySelector("select").value;
+                let to = row.cells[1].querySelector("select").value;
+                let amount = row.cells[2].querySelector("input").value;
+                if (from !== to && amount > 0) {
+                    transactions.push({ from, to, amount: parseFloat(amount) });
+                }
+            });
+
+            let inputJson = JSON.stringify(transactions);
+            let result = Module.ccall("minimizeCashFlow", "string", ["string"], [inputJson]);
+            alert("Result:\n" + result);
+        }
+    </script>
 </body>
 
 </html>
